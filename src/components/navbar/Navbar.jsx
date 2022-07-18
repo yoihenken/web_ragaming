@@ -1,7 +1,8 @@
 import {useState} from "react";
-import { Layout, Menu } from 'antd';
+import {Layout, Menu, Space} from 'antd';
 import {UserOutlined, ShoppingOutlined} from '@ant-design/icons';
 import {Link, useNavigate} from "react-router-dom";
+import { ReactComponent as LogoIcon } from  '../../asset/logo.svg'
 
 const { Sider } = Layout;
 
@@ -32,8 +33,8 @@ const Navbar = () => {
     const [collapsed, setCollapsed] = useState(false)
 
     return (
-        <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-            <div className="logo" />
+        <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} breakpoint="lg" >
+            <LogoIcon style={{paddingTop:'10px'}}/>
             <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} />
         </Sider>
     )
