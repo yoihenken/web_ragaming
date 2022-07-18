@@ -1,30 +1,51 @@
-import {Button, Input, Layout, Space, Table} from "antd";
+import {Button, Col, Divider, Input, InputNumber, Layout, Modal, Row, Space, Switch, Table, Typography} from "antd";
 import goodsColumn from './GoodsColumn'
 import {useEffect, useRef, useState} from "react";
-import {SearchOutlined} from "@ant-design/icons";
+import {EditOutlined, SearchOutlined, PlusOutlined} from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
-
+const { Title } = Typography;
 const {Content} = Layout;
 
 const data = [
     {
-        name : "Rinso",
-        price : 15000,
-        stock : 10,
-        goodsIn : 7,
-        goodsOut : 2,
-    },{
-        name : "Pensil",
-        price : 2000,
-        stock : 19,
-        goodsIn : 2,
-        goodsOut : 8,
-    },{
-        name : "Pen",
-        price : 5000,
-        stock : 6,
-        goodsIn : 1,
-        goodsOut : 5,
+        id : 1,
+        goods_name: "Rinso",
+        price: 15000,
+        stock: 12,
+        goods_in: 7,
+        goods_out: 2,
+        total_goods_in: 14,
+        total_goods_out: 2,
+        created_by: "SUPERADMIN",
+        updated_by: "SUPERADMIN",
+        created_at: new Date("2022-07-16T17:57:49.000Z"),
+        updated_at: new Date("2022-07-17T06:33:39.000Z")
+    }, {
+        id : 2,
+        goods_name: "Pensil",
+        price: 2000,
+        stock: 19,
+        goods_in: 2,
+        goods_out: 8,
+        total_goods_in: 29,
+        total_goods_out: 10,
+        created_by: "SUPERADMIN",
+        updated_by: "SUPERADMIN",
+        created_at: new Date("2022-07-16T17:57:49.000Z"),
+        updated_at: new Date("2022-07-17T06:33:39.000Z")
+    }, {
+        id : 2,
+        goods_name: "Pen",
+        price: 5000,
+        stock: 13,
+        goods_in: 1,
+        goods_out: 5,
+        total_goods_in: 7,
+        total_goods_out: 6,
+        created_by: "SUPERADMIN",
+        updated_by: "SUPERADMIN",
+        created_at: new Date("2022-07-16T17:57:49.000Z"),
+        updated_at: new Date("2022-07-17T06:33:39.000Z")
     },
 ]
 
@@ -34,10 +55,85 @@ function GoodsPage() {
     const [searchedColumn, setSearchedColumn] = useState('');
     const searchInput = useRef(null);
     const [dataTable, setDataTable] = useState()
+    const [loading, setLoading] = useState(false);
+    const [modalAdd, setModalAdd] = useState(false);
+    const [modalDetail, setModalDetail] = useState(false);
+    const [modalGoodsIn, setModalGoodsIn] = useState(false);
+    const [modalGoodsOut, setModalGoodsOut] = useState(false);
+    const [selectedGoods, setSelectedGoods] = useState({})
+    const [onEdit, setOnEdit] = useState(false)
 
     useEffect(() => {
         setDataTable(data)
     });
+
+    useEffect(() => {
+        console.log('selectedGoods', selectedGoods)
+    },[selectedGoods]);
+
+    const showModalDetail = () => {
+        setModalDetail(!modalDetail);
+        setOnEdit(false)
+    };
+
+    const showModalAdd = () => {
+        setModalAdd(!modalAdd);
+        console.log('view', selectedGoods)
+        setSelectedGoods({})
+    };
+
+    const showModalGoodsIn = () => {
+        setModalGoodsIn(!modalGoodsIn);
+    };
+
+    const showModalGoodsOut = () => {
+        setModalGoodsOut(!modalGoodsOut);
+    };
+
+    const onChangeGoods = (event, value, key) => {
+        console.log(event)
+        console.log(value)
+        console.log(key)
+
+        if (event == undefined){
+            let validValue = Number(value)
+            if (validValue){
+                setSelectedGoods({
+                    ...selectedGoods,
+                    [key]: validValue
+                })
+            }
+        } else {
+            setSelectedGoods({
+                ...selectedGoods,
+                [event.target.name]: event.target.value
+            })
+        }
+    }
+
+    const onChangeGoodsIn = (value) => {
+        setSelectedGoods({
+            ...selectedGoods, addGoodsIn: value
+        })
+    }
+
+    const onChangeGoodsOut = (value) => {
+        setSelectedGoods({
+            ...selectedGoods, addGoodsOut: value
+        })
+    }
+
+    const cmdDeleteGoods = (record) => {
+
+    }
+
+    const handleOk = () => {
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+            setModalDetail(false);
+        }, 3000);
+    };
 
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
         confirm();
@@ -50,7 +146,7 @@ function GoodsPage() {
         setSearchText('');
     };
 
-    const getColumnSearchProps  = (dataIndex) => ({
+    const getColumnSearchProps = (dataIndex) => ({
         filterDropdown: ({setSelectedKeys, selectedKeys, confirm, clearFilters}) => (
             <div
                 style={{
@@ -135,29 +231,466 @@ function GoodsPage() {
             ),
     })
 
-    const column = goodsColumn.map(obj => {
-        if (obj.key === 'name'){
-            return {...obj, ...getColumnSearchProps('name')}
+    const goodsCol = goodsColumn.map(obj => {
+        if (obj.key === 'goods_name') {
+            return {...obj, ...getColumnSearchProps('goods_name')}
         }
         return obj
     })
 
-    return (
-        <Layout className="site-layout">
-            <Content
-                style={{margin: '0 16px'}}>
-                <div
-                    className="site-layout-background"
-                    style={{
-                        padding: 24,
-                        minHeight: 360,
-                        backgroundColor : '#FFFFFF'
+    const column = [...goodsCol, {
+        title: "Aksi",
+        key: "aksi",
+        width: '20%',
+        render: (text, record, index) => (
+            <Space>
+                <Button
+                    onClick={() => {
+                        setSelectedGoods(record)
+                        showModalGoodsIn()
                     }}
                 >
-                    <Table columns={column} dataSource={dataTable}/>
-                </div>
-            </Content>
-        </Layout>
+                    Barang Masuk
+                </Button>
+                <Button
+                    onClick={() => {
+                        setSelectedGoods(record)
+                        showModalGoodsOut()
+                    }}
+                >
+                    Barang Keluar
+                </Button>
+                <Button
+                    onClick={() => {
+                        setSelectedGoods(record)
+                        showModalDetail()
+                    }}
+                >
+                    Detail
+                </Button>
+                <Button
+                    type="primary"
+                    danger
+                    onClick={cmdDeleteGoods(record)}
+                >
+                    Hapus
+                </Button>
+            </Space>
+        ),
+    }]
+
+    return (
+        <>
+            {/*Main Layout*/}
+            <Layout className="site-layout">
+                <Content
+                    style={{margin: '0 16px'}}>
+                    <div
+                        className="site-layout-background"
+                        style={{
+                            padding: 24,
+                            minHeight: 360,
+                            backgroundColor: '#FFFFFF'
+                        }}
+                    >
+                        <Space direction={'vertical'} style={{ display: 'flex' }} size={'small'}>
+                            <Row align="middle">
+                                <Col flex={30} >
+                                    <Title level={2}> Data Barang </Title>
+                                </Col>
+                                <Col flex={'auto'}>
+                                    <Button
+                                        type="primary"
+                                        shape="round"
+                                        icon={<PlusOutlined />}
+                                        size={'large'}
+                                        onClick={showModalAdd}
+                                    >
+                                        Tambah Barang
+                                    </Button>
+                                </Col>
+                                <Col span={24}>
+                                    <Divider />
+                                </Col>
+                            </Row>
+
+                            <Table columns={column} dataSource={dataTable} scroll={{x: true}}/>
+                        </Space>
+                    </div>
+                </Content>
+            </Layout>
+
+            {/*Goods In*/}
+            <Modal
+                visible={modalGoodsIn}
+                title={`Barang Masuk - ${selectedGoods.goods_name}`}
+                onCancel={showModalGoodsIn}
+                width={500}
+                footer={[
+                    <Button key="back" onClick={showModalGoodsIn}>
+                        Kembali
+                    </Button>,
+                    <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+                        Simpan
+                    </Button>
+                ]}
+            >
+                <Space align="baseline" size={"middle"}>
+                    <h4>Jumlah Barang Masuk : </h4>
+                    <InputNumber
+                        min={0}
+                        keyboard={true}
+                        value={selectedGoods.addGoodsIn}
+                        defaultValue={0}
+                        onPressEnter={handleOk}
+                        onChange={onChangeGoodsIn}/>
+                </Space>
+            </Modal>
+
+            {/*Goods Out*/}
+            <Modal
+                visible={modalGoodsOut}
+                title={`Barang Keluar - ${selectedGoods.goods_name}`}
+                onCancel={showModalGoodsOut}
+                width={500}
+                footer={[
+                    <Button key="back" onClick={showModalGoodsOut}>
+                        Kembali
+                    </Button>,
+                    <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+                        Simpan
+                    </Button>
+                ]}
+            >
+                <Space align="baseline" size={"middle"}>
+                    <h4>Jumlah Barang Keluar : </h4>
+                    <InputNumber
+                        min={0}
+                        keyboard={true}
+                        value={selectedGoods.addGoodsOut}
+                        defaultValue={0}
+                        onPressEnter={handleOk}
+                        onChange={onChangeGoodsOut}/>
+                </Space>
+            </Modal>
+
+            {/*Detail*/}
+            <Modal
+                visible={modalDetail}
+                title={`Detail - ${selectedGoods.goods_name}`}
+                onCancel={showModalDetail}
+                width={800}
+                footer={[
+                    <Button key="back" onClick={showModalDetail}>
+                        Kembali
+                    </Button>,
+                    <>{onEdit && <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+                        Simpan
+                    </Button>}</>
+                ]}
+            >
+                {/*turn on edit*/}
+                <Row align={'end'}>
+                    <Col span={2.5}>
+                        <Switch
+                            checked={onEdit}
+                            checkedChildren="Edit Aktif"
+                            unCheckedChildren="Edit Nonaktif"
+                            onChange={() => {
+                                setOnEdit(!onEdit)
+                            }}
+                        />
+                    </Col>
+                </Row>
+                {/*Form*/}
+                <Row gutter={[8, 32]}>
+                    <Col span={12}>
+                        <Row gutter={[8, 16]} >
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>ID Barang</h4>
+                                    <Input
+                                        name={'id'}
+                                        disabled={onEdit}
+                                        readOnly={!onEdit}
+                                        value={selectedGoods.id}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Nama Barang</h4>
+                                    <Input
+                                        name={'goods_name'}
+                                        readOnly={!onEdit}
+                                        placeholder="Masukkan nama barang"
+                                        status={""}
+                                        value={selectedGoods.goods_name}
+                                        onChange={(event => onChangeGoods(event))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Stok</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'stock'}
+                                        readOnly={!onEdit}
+                                        placeholder="Masukkan jumlah stok barang"
+                                        status={""}
+                                        value={selectedGoods.stock}
+                                        onChange={(value => onChangeGoods(undefined, value, 'stock'))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Harga</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'price'}
+                                        readOnly={!onEdit}
+                                        placeholder="Masukkan harga barang"
+                                        status={""}
+                                        prefix={"Rp"}
+                                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        parser={(value) => value.replace(/\s?|(,*)/g, '')}
+                                        value={selectedGoods.price}
+                                        onChange={(value => onChangeGoods(undefined, value, 'price'))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Barang Masuk (Hari ini)</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'goods_in'}
+                                        readOnly={!onEdit}
+                                        placeholder="Masukkan jumlah barang masuk hari ini"
+                                        status={""}
+                                        value={selectedGoods.goods_in}
+                                        onChange={(value => onChangeGoods(undefined, value, 'goods_in'))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Barang Keluar (Hari ini)</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'goods_out'}
+                                        readOnly={!onEdit}
+                                        placeholder="Masukkan jumlah barang keluar hari ini"
+                                        status={""}
+                                        value={selectedGoods.goods_out}
+                                        onChange={(value => onChangeGoods(undefined, value, 'goods_out'))}
+                                    />
+                                </Space>
+                            </Col>
+                        </Row>
+                    </Col>
+                    <Col span={12}>
+                        <Row gutter={[8, 16]} >
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Total Barang Masuk</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'total_goods_in'}
+                                        readOnly={!onEdit}
+                                        placeholder="Masukkan total barang masuk"
+                                        status={""}
+                                        value={selectedGoods.total_goods_in}
+                                        onChange={(value => onChangeGoods(undefined, value, 'total_goods_in'))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Total Barang Keluar</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'total_goods_out'}
+                                        readOnly={!onEdit}
+                                        placeholder="Masukkan total jumlah barang keluar"
+                                        status={""}
+                                        value={selectedGoods.total_goods_out}
+                                        onChange={(value => onChangeGoods(undefined, value, 'total_goods_out' ))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Input oleh</h4>
+                                    <Input
+                                        name={'created_by'}
+                                        disabled={onEdit}
+                                        readOnly={!onEdit}
+                                        value={selectedGoods.created_by}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Input Pada</h4>
+                                    <Input
+                                        name={'created_at'}
+                                        disabled={onEdit}
+                                        readOnly={!onEdit}
+                                        value={selectedGoods.created_at}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Ubah Oleh</h4>
+                                    <Input
+                                        name={'updated_by'}
+                                        disabled={onEdit}
+                                        readOnly={!onEdit}
+                                        value={selectedGoods.updated_by}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Ubah Pada</h4>
+                                    <Input
+                                        name={'updated_at'}
+                                        disabled={onEdit}
+                                        readOnly={!onEdit}
+                                        value={selectedGoods.updated_at}
+                                    />
+                                </Space>
+                            </Col>
+                        </Row>
+                    </Col>
+                </Row>
+            </Modal>
+
+            {/*Tambah barang*/}
+            <Modal
+                visible={modalAdd}
+                title={'Tambah Barang'}
+                onCancel={showModalAdd}
+                width={800}
+                footer={[
+                    <Button key="back" onClick={showModalAdd}>
+                        Kembali
+                    </Button>,
+                    <>{onEdit && <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+                        Simpan
+                    </Button>}</>
+                ]}
+            >
+                {/*Form*/}
+                <Row gutter={[8, 32]}>
+                    <Col span={12}>
+                        <Row gutter={[8, 16]} >
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Nama Barang</h4>
+                                    <Input
+                                        name={'goods_name'}
+                                        placeholder="Masukkan nama barang"
+                                        status={""}
+                                        value={selectedGoods.goods_name}
+                                        onChange={(event => onChangeGoods(event))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Stok</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'stock'}
+                                        placeholder="Masukkan jumlah stok barang"
+                                        status={""}
+                                        value={selectedGoods.stock}
+                                        onChange={(value => onChangeGoods(undefined, value, 'stock'))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Harga</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'price'}
+                                        placeholder="Masukkan harga barang"
+                                        status={""}
+                                        prefix={"Rp"}
+                                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        parser={(value) => value.replace(/\s?|(,*)/g, '')}
+                                        value={selectedGoods.price}
+                                        onChange={(value => onChangeGoods(undefined, value, 'price'))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Barang Masuk (Hari ini)</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'goods_in'}
+                                        placeholder="Masukkan jumlah barang masuk hari ini"
+                                        status={""}
+                                        value={selectedGoods.goods_in}
+                                        onChange={(value => onChangeGoods(undefined, value, 'goods_in'))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Barang Keluar (Hari ini)</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'goods_out'}
+                                        placeholder="Masukkan jumlah barang keluar hari ini"
+                                        status={""}
+                                        value={selectedGoods.goods_out}
+                                        onChange={(value => onChangeGoods(undefined, value, 'goods_out'))}
+                                    />
+                                </Space>
+                            </Col>
+                        </Row>
+                    </Col>
+                    <Col span={12}>
+                        <Row gutter={[8, 16]} >
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Total Barang Masuk</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'total_goods_in'}
+                                        placeholder="Masukkan total barang masuk"
+                                        status={""}
+                                        value={selectedGoods.total_goods_in}
+                                        onChange={(value => onChangeGoods(undefined, value, 'total_goods_in'))}
+                                    />
+                                </Space>
+                            </Col>
+                            <Col span={24}>
+                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                    <h4>Total Barang Keluar</h4>
+                                    <InputNumber
+                                        style={{width: '100%'}}
+                                        name={'total_goods_out'}
+                                        placeholder="Masukkan total jumlah barang keluar"
+                                        status={""}
+                                        value={selectedGoods.total_goods_out}
+                                        onChange={(value => onChangeGoods(undefined, value, 'total_goods_out' ))}
+                                    />
+                                </Space>
+                            </Col>
+                        </Row>
+                    </Col>
+                </Row>
+            </Modal>
+        </>
     )
 
 }

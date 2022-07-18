@@ -8,8 +8,8 @@ const goodsColumn = [
     },
     {
         title: "Nama Barang",
-        dataIndex: "name",
-        key: 'name',
+        dataIndex: "goods_name",
+        key: 'goods_name',
         width: '20%',
     },
     {
@@ -31,21 +31,21 @@ const goodsColumn = [
     },
     {
         title: "Barang Masuk",
-        dataIndex: "goodsIn",
-        key: 'goodsIn',
+        dataIndex: "goods_in",
+        key: 'goods_in',
         width: '15%',
-        sorter: (a, b) => a['goodsIn'] - b['goodsIn'],
+        sorter: (a, b) => a['goods_in'] - b['goods_in'],
         sortDirections: ['descend', 'ascend'],
-        render: (text, record, index) => "+ " + text
+        render: (text, record, index) => (<div style={{color:"#73d13d"}}>+ {text}</div>)
     },
     {
         title: "Barang Keluar",
-        dataIndex: "goodsOut",
+        dataIndex: "goods_out",
         key: 'goodsOut',
         width: '15%',
-        sorter: (a, b) => a['goodsOut'] - b['goodsOut'],
+        sorter: (a, b) => a['goods_out'] - b['goods_out'],
         sortDirections: ['descend', 'ascend'],
-        render: (text, record, index) => "- " + text
+        render: (text, record, index) => (<div style={{color:"#ff7875"}}>- {text}</div>)
     }
 ]
 
