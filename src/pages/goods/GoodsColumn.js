@@ -18,7 +18,8 @@ const goodsColumn = [
         key: 'price',
         width: '15%',
         sorter: (a, b) => a['price'] - b['price'],
-        sortDirections: ['descend', 'ascend']
+        sortDirections: ['descend', 'ascend'],
+        render: (text => `${text}`.replace(/\B(?=(\d{3})+(?!\d))/g, ','))
 
     },
     {

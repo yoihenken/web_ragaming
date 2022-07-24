@@ -1,56 +1,39 @@
-import {Button, Col, Divider, Input, InputNumber, Layout, Modal, Row, Space, Switch, Table, Typography} from "antd";
+import {
+    Button,
+    Col,
+    Divider,
+    Input,
+    InputNumber,
+    Layout,
+    Modal,
+    Popconfirm,
+    Row,
+    Space,
+    Switch,
+    Table,
+    Typography
+} from "antd";
 import goodsColumn from './GoodsColumn'
 import {useEffect, useRef, useState} from "react";
-import {EditOutlined, SearchOutlined, PlusOutlined} from "@ant-design/icons";
+import {FileExcelOutlined, PlusOutlined, SearchOutlined} from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
-const { Title } = Typography;
+import {useSelector} from "react-redux";
+import {
+    getGoodsAll,
+    getGoodsExport,
+    postGoodsDelete,
+    postGoodsInsert,
+    postGoodsUpdateAll,
+    postGoodsUpdateGoodsIn,
+    postGoodsUpdateGoodsOut
+} from '../../repository/goods'
+import {Notification} from "../../components/notification/Notification";
+
+const {Title} = Typography;
 const {Content} = Layout;
 
-const data = [
-    {
-        id : 1,
-        goods_name: "Rinso",
-        price: 15000,
-        stock: 12,
-        goods_in: 7,
-        goods_out: 2,
-        total_goods_in: 14,
-        total_goods_out: 2,
-        created_by: "SUPERADMIN",
-        updated_by: "SUPERADMIN",
-        created_at: new Date("2022-07-16T17:57:49.000Z"),
-        updated_at: new Date("2022-07-17T06:33:39.000Z")
-    }, {
-        id : 2,
-        goods_name: "Pensil",
-        price: 2000,
-        stock: 19,
-        goods_in: 2,
-        goods_out: 8,
-        total_goods_in: 29,
-        total_goods_out: 10,
-        created_by: "SUPERADMIN",
-        updated_by: "SUPERADMIN",
-        created_at: new Date("2022-07-16T17:57:49.000Z"),
-        updated_at: new Date("2022-07-17T06:33:39.000Z")
-    }, {
-        id : 2,
-        goods_name: "Pen",
-        price: 5000,
-        stock: 13,
-        goods_in: 1,
-        goods_out: 5,
-        total_goods_in: 7,
-        total_goods_out: 6,
-        created_by: "SUPERADMIN",
-        updated_by: "SUPERADMIN",
-        created_at: new Date("2022-07-16T17:57:49.000Z"),
-        updated_at: new Date("2022-07-17T06:33:39.000Z")
-    },
-]
-
 function GoodsPage() {
-
+    const user = useSelector((state) => state.user)
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
     const searchInput = useRef(null);
@@ -63,13 +46,108 @@ function GoodsPage() {
     const [selectedGoods, setSelectedGoods] = useState({})
     const [onEdit, setOnEdit] = useState(false)
 
-    useEffect(() => {
-        setDataTable(data)
-    });
+    const doGetGoodsList = async () => {
+        const {status, goods} = await getGoodsAll()
+        if (status) {
+            setDataTable(goods)
+        }
+    }
+
+    const cmdGoodsInsert = async () => {
+        setLoading(true)
+        const {status, goods, message} = await postGoodsInsert(selectedGoods)
+        if (status) {
+            doGetGoodsList()
+            Notification('success', 'Berhasil ditambahkan !')
+        } else {
+            Notification('error', message)
+        }
+        setLoading(false)
+        showModalAdd()
+    }
+
+    const cmdGoodsUpdateAll = async () => {
+        setLoading(true)
+        const {status, goods, message} = await postGoodsUpdateAll({...selectedGoods, updated_by: user.name})
+        if (status) {
+            Notification('success', 'Berhasil diupdate !')
+            doGetGoodsList()
+            setLoading(false)
+            showModalDetail()
+        } else {
+            Notification('error', message)
+            setLoading(false)
+            showModalDetail()
+        }
+    }
+
+
+    const cmdDeleteGoods = async () => {
+        setLoading(true)
+        const {status, message} = await postGoodsDelete(selectedGoods.id)
+        if (status) {
+            setTimeout(() => {
+                Notification('success', 'Berhasil dihapus !')
+                doGetGoodsList()
+                setLoading(false)
+            }, 1000)
+        } else {
+            Notification('error', message)
+            setLoading(false)
+        }
+    }
+
+    const cmdGoodsIn = async () => {
+        setLoading(true)
+        const {status, message} = await postGoodsUpdateGoodsIn(selectedGoods)
+        if (status) {
+            setTimeout(() => {
+                Notification('success', 'Berhasil diupdate !')
+                doGetGoodsList()
+                setLoading(false)
+            }, 1000)
+        } else {
+            Notification('error', message)
+            setLoading(false)
+        }
+    }
+
+    const cmdGoodsOut = async () => {
+        setLoading(true)
+        const {status, message} = await postGoodsUpdateGoodsOut(selectedGoods)
+        if (status) {
+            setTimeout(() => {
+                Notification('success', 'Berhasil diupdate !')
+                doGetGoodsList()
+                setLoading(false)
+            }, 1000)
+        } else {
+            Notification('error', message)
+            setLoading(false)
+        }
+    }
+
+    const cmdExportToExcel = async () => {
+        setLoading(true)
+        const {status, message} = await getGoodsExport()
+        if (status) {
+            setTimeout(() => {
+                Notification('success', 'Berhasil didownload!')
+                setLoading(false)
+            }, 1000)
+        } else {
+            Notification('error', message)
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
-        console.log('selectedGoods', selectedGoods)
-    },[selectedGoods]);
+        doGetGoodsList();
+    }, []);
+
+    useEffect(() => {
+        console.log('set', selectedGoods)
+    }, [selectedGoods])
 
     const showModalDetail = () => {
         setModalDetail(!modalDetail);
@@ -78,8 +156,14 @@ function GoodsPage() {
 
     const showModalAdd = () => {
         setModalAdd(!modalAdd);
-        console.log('view', selectedGoods)
-        setSelectedGoods({})
+        setSelectedGoods({
+            goods_in: 0,
+            goods_out: 0,
+            total_goods_in: 0,
+            total_goods_out: 0,
+            created_by: user.name,
+            updated_by: user.name,
+        })
     };
 
     const showModalGoodsIn = () => {
@@ -91,13 +175,9 @@ function GoodsPage() {
     };
 
     const onChangeGoods = (event, value, key) => {
-        console.log(event)
-        console.log(value)
-        console.log(key)
-
-        if (event == undefined){
+        if (event == undefined) {
             let validValue = Number(value)
-            if (validValue){
+            if (validValue) {
                 setSelectedGoods({
                     ...selectedGoods,
                     [key]: validValue
@@ -122,18 +202,6 @@ function GoodsPage() {
             ...selectedGoods, addGoodsOut: value
         })
     }
-
-    const cmdDeleteGoods = (record) => {
-
-    }
-
-    const handleOk = () => {
-        setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            setModalDetail(false);
-        }, 3000);
-    };
 
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
         confirm();
@@ -244,6 +312,7 @@ function GoodsPage() {
         width: '20%',
         render: (text, record, index) => (
             <Space>
+                {(user.role === 'SUPERADMIN' || user.role === 'ADMIN') &&
                 <Button
                     onClick={() => {
                         setSelectedGoods(record)
@@ -251,7 +320,8 @@ function GoodsPage() {
                     }}
                 >
                     Barang Masuk
-                </Button>
+                </Button>}
+                {(user.role === 'SUPERADMIN' || user.role === 'ADMIN' || user.role === 'AUDIT') &&
                 <Button
                     onClick={() => {
                         setSelectedGoods(record)
@@ -260,6 +330,7 @@ function GoodsPage() {
                 >
                     Barang Keluar
                 </Button>
+                }
                 <Button
                     onClick={() => {
                         setSelectedGoods(record)
@@ -268,13 +339,23 @@ function GoodsPage() {
                 >
                     Detail
                 </Button>
-                <Button
-                    type="primary"
-                    danger
-                    onClick={cmdDeleteGoods(record)}
+                {(user.role === 'SUPERADMIN' || user.role === 'ADMIN') &&
+                <Popconfirm
+                    title="Hapus data ini?"
+                    onConfirm={cmdDeleteGoods}
+                    okText="Ya"
+                    cancelText="Tidak"
                 >
-                    Hapus
-                </Button>
+                    <Button
+                        type="primary"
+                        danger
+                        onClick={() => {
+                            setSelectedGoods(record)
+                        }}
+                    >
+                        Hapus
+                    </Button>
+                </Popconfirm>}
             </Space>
         ),
     }]
@@ -293,24 +374,39 @@ function GoodsPage() {
                             backgroundColor: '#FFFFFF'
                         }}
                     >
-                        <Space direction={'vertical'} style={{ display: 'flex' }} size={'small'}>
+                        <Space direction={'vertical'} style={{display: 'flex'}} size={'small'}>
                             <Row align="middle">
-                                <Col flex={30} >
+                                <Col flex={30}>
                                     <Title level={2}> Data Barang </Title>
                                 </Col>
                                 <Col flex={'auto'}>
-                                    <Button
-                                        type="primary"
-                                        shape="round"
-                                        icon={<PlusOutlined />}
-                                        size={'large'}
-                                        onClick={showModalAdd}
-                                    >
-                                        Tambah Barang
-                                    </Button>
+                                    <Space>
+                                        <Button
+                                            style={{
+                                                color: '#73d13d',
+                                                borderColor: '#73d13d'
+                                            }}
+                                            shape="round"
+                                            icon={<FileExcelOutlined/>}
+                                            size={'large'}
+                                            onClick={cmdExportToExcel}
+                                        >
+                                            Export ke Excel
+                                        </Button>
+                                        {(user.role === 'SUPERADMIN' || user.role === 'ADMIN') &&
+                                        <Button
+                                            type="primary"
+                                            shape="round"
+                                            icon={<PlusOutlined/>}
+                                            size={'large'}
+                                            onClick={showModalAdd}
+                                        >
+                                            Tambah Barang
+                                        </Button>}
+                                    </Space>
                                 </Col>
                                 <Col span={24}>
-                                    <Divider />
+                                    <Divider/>
                                 </Col>
                             </Row>
 
@@ -330,7 +426,7 @@ function GoodsPage() {
                     <Button key="back" onClick={showModalGoodsIn}>
                         Kembali
                     </Button>,
-                    <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+                    <Button key="submit" type="primary" loading={loading} onClick={cmdGoodsIn}>
                         Simpan
                     </Button>
                 ]}
@@ -342,7 +438,7 @@ function GoodsPage() {
                         keyboard={true}
                         value={selectedGoods.addGoodsIn}
                         defaultValue={0}
-                        onPressEnter={handleOk}
+                        onPressEnter={cmdGoodsIn}
                         onChange={onChangeGoodsIn}/>
                 </Space>
             </Modal>
@@ -357,7 +453,7 @@ function GoodsPage() {
                     <Button key="back" onClick={showModalGoodsOut}>
                         Kembali
                     </Button>,
-                    <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+                    <Button key="submit" type="primary" loading={loading} onClick={cmdGoodsOut}>
                         Simpan
                     </Button>
                 ]}
@@ -369,7 +465,7 @@ function GoodsPage() {
                         keyboard={true}
                         value={selectedGoods.addGoodsOut}
                         defaultValue={0}
-                        onPressEnter={handleOk}
+                        onPressEnter={cmdGoodsOut}
                         onChange={onChangeGoodsOut}/>
                 </Space>
             </Modal>
@@ -384,12 +480,13 @@ function GoodsPage() {
                     <Button key="back" onClick={showModalDetail}>
                         Kembali
                     </Button>,
-                    <>{onEdit && <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+                    <>{onEdit && <Button key="submit" type="primary" loading={loading} onClick={cmdGoodsUpdateAll}>
                         Simpan
                     </Button>}</>
                 ]}
             >
                 {/*turn on edit*/}
+                {(user.role === 'SUPERADMIN' || user.role === 'ADMIN') &&
                 <Row align={'end'}>
                     <Col span={2.5}>
                         <Switch
@@ -401,13 +498,13 @@ function GoodsPage() {
                             }}
                         />
                     </Col>
-                </Row>
+                </Row>}
                 {/*Form*/}
                 <Row gutter={[8, 32]}>
                     <Col span={12}>
-                        <Row gutter={[8, 16]} >
+                        <Row gutter={[8, 16]}>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>ID Barang</h4>
                                     <Input
                                         name={'id'}
@@ -418,7 +515,7 @@ function GoodsPage() {
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Nama Barang</h4>
                                     <Input
                                         name={'goods_name'}
@@ -431,7 +528,7 @@ function GoodsPage() {
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Stok</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
@@ -445,7 +542,7 @@ function GoodsPage() {
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Harga</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
@@ -455,14 +552,14 @@ function GoodsPage() {
                                         status={""}
                                         prefix={"Rp"}
                                         formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={(value) => value.replace(/\s?|(,*)/g, '')}
+                                        parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                                         value={selectedGoods.price}
                                         onChange={(value => onChangeGoods(undefined, value, 'price'))}
                                     />
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Barang Masuk (Hari ini)</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
@@ -476,7 +573,7 @@ function GoodsPage() {
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Barang Keluar (Hari ini)</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
@@ -492,9 +589,9 @@ function GoodsPage() {
                         </Row>
                     </Col>
                     <Col span={12}>
-                        <Row gutter={[8, 16]} >
+                        <Row gutter={[8, 16]}>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Total Barang Masuk</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
@@ -508,7 +605,7 @@ function GoodsPage() {
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Total Barang Keluar</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
@@ -517,12 +614,12 @@ function GoodsPage() {
                                         placeholder="Masukkan total jumlah barang keluar"
                                         status={""}
                                         value={selectedGoods.total_goods_out}
-                                        onChange={(value => onChangeGoods(undefined, value, 'total_goods_out' ))}
+                                        onChange={(value => onChangeGoods(undefined, value, 'total_goods_out'))}
                                     />
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Input oleh</h4>
                                     <Input
                                         name={'created_by'}
@@ -533,7 +630,7 @@ function GoodsPage() {
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Input Pada</h4>
                                     <Input
                                         name={'created_at'}
@@ -544,7 +641,7 @@ function GoodsPage() {
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Ubah Oleh</h4>
                                     <Input
                                         name={'updated_by'}
@@ -555,7 +652,7 @@ function GoodsPage() {
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Ubah Pada</h4>
                                     <Input
                                         name={'updated_at'}
@@ -580,17 +677,17 @@ function GoodsPage() {
                     <Button key="back" onClick={showModalAdd}>
                         Kembali
                     </Button>,
-                    <>{onEdit && <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+                    <Button key="submit" type="primary" loading={loading} onClick={cmdGoodsInsert}>
                         Simpan
-                    </Button>}</>
+                    </Button>
                 ]}
             >
                 {/*Form*/}
                 <Row gutter={[8, 32]}>
                     <Col span={12}>
-                        <Row gutter={[8, 16]} >
+                        <Row gutter={[8, 16]}>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Nama Barang</h4>
                                     <Input
                                         name={'goods_name'}
@@ -602,7 +699,7 @@ function GoodsPage() {
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Stok</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
@@ -615,7 +712,7 @@ function GoodsPage() {
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Harga</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
@@ -624,33 +721,35 @@ function GoodsPage() {
                                         status={""}
                                         prefix={"Rp"}
                                         formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={(value) => value.replace(/\s?|(,*)/g, '')}
+                                        parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                                         value={selectedGoods.price}
                                         onChange={(value => onChangeGoods(undefined, value, 'price'))}
                                     />
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Barang Masuk (Hari ini)</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
                                         name={'goods_in'}
                                         placeholder="Masukkan jumlah barang masuk hari ini"
                                         status={""}
+                                        defaultValue={0}
                                         value={selectedGoods.goods_in}
                                         onChange={(value => onChangeGoods(undefined, value, 'goods_in'))}
                                     />
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Barang Keluar (Hari ini)</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
                                         name={'goods_out'}
                                         placeholder="Masukkan jumlah barang keluar hari ini"
                                         status={""}
+                                        defaultValue={0}
                                         value={selectedGoods.goods_out}
                                         onChange={(value => onChangeGoods(undefined, value, 'goods_out'))}
                                     />
@@ -659,30 +758,32 @@ function GoodsPage() {
                         </Row>
                     </Col>
                     <Col span={12}>
-                        <Row gutter={[8, 16]} >
+                        <Row gutter={[8, 16]}>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Total Barang Masuk</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
                                         name={'total_goods_in'}
                                         placeholder="Masukkan total barang masuk"
                                         status={""}
+                                        defaultValue={0}
                                         value={selectedGoods.total_goods_in}
                                         onChange={(value => onChangeGoods(undefined, value, 'total_goods_in'))}
                                     />
                                 </Space>
                             </Col>
                             <Col span={24}>
-                                <Space direction={'vertical'} style={{ display: 'flex' }}>
+                                <Space direction={'vertical'} style={{display: 'flex'}}>
                                     <h4>Total Barang Keluar</h4>
                                     <InputNumber
                                         style={{width: '100%'}}
                                         name={'total_goods_out'}
                                         placeholder="Masukkan total jumlah barang keluar"
                                         status={""}
+                                        defaultValue={0}
                                         value={selectedGoods.total_goods_out}
-                                        onChange={(value => onChangeGoods(undefined, value, 'total_goods_out' ))}
+                                        onChange={(value => onChangeGoods(undefined, value, 'total_goods_out'))}
                                     />
                                 </Space>
                             </Col>

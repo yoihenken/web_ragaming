@@ -3,19 +3,27 @@ import {Layout} from "antd";
 import Navbar from "../components/navbar/Navbar";
 import Header from "../components/header/Header";
 import {useEffect} from "react";
+import Constant from "../constant"
+import {useDispatch, useSelector} from "react-redux";
+import {setUser} from "../reduxslice/userSlice";
 
 const {Content, Footer} = Layout;
 
 
 function BaseLayout() {
+    const user = useSelector((state) => state.user);
     const router = useNavigate();
     const location = useLocation();
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        if (location.pathname == "/") {
-            router("/barang", { replace: true });
+        if (location.pathname === "/") {
+            router("/barang", {replace: true});
         }
-    })
+        if (user == null) {
+            dispatch(setUser(JSON.parse(localStorage.getItem(Constant.STORAGE_KEY.USER_INFO))))
+        }
+    }, [])
 
     return (
         <Layout
