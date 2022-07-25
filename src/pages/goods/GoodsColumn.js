@@ -11,6 +11,7 @@ const goodsColumn = [
         dataIndex: "goods_name",
         key: 'goods_name',
         width: '20%',
+        sorter: (a, b) => a.goods_name.localeCompare(b.goods_name),
     },
     {
         title: "Harga",

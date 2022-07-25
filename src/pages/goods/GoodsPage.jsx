@@ -33,7 +33,8 @@ const {Title} = Typography;
 const {Content} = Layout;
 
 function GoodsPage() {
-    const user = useSelector((state) => state.user)
+    const auth = useSelector((state) => state.user)
+    const user = auth == null ? {name: 'N'} : auth
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
     const searchInput = useRef(null);
@@ -80,7 +81,6 @@ function GoodsPage() {
             showModalDetail()
         }
     }
-
 
     const cmdDeleteGoods = async () => {
         setLoading(true)
@@ -132,7 +132,7 @@ function GoodsPage() {
         const {status, message} = await getGoodsExport()
         if (status) {
             setTimeout(() => {
-                Notification('success', 'Berhasil didownload!')
+                Notification('success', 'Berhasil didownload !')
                 setLoading(false)
             }, 1000)
         } else {
@@ -144,10 +144,6 @@ function GoodsPage() {
     useEffect(() => {
         doGetGoodsList();
     }, []);
-
-    useEffect(() => {
-        console.log('set', selectedGoods)
-    }, [selectedGoods])
 
     const showModalDetail = () => {
         setModalDetail(!modalDetail);

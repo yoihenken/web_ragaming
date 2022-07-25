@@ -3,6 +3,7 @@ import {BrowserRouter, Route, Routes} from "react-router-dom";
 import LoginPage from "./pages/login/LoginPage";
 import BaseLayout from "./pages/BaseLayout";
 import GoodsPage from "./pages/goods/GoodsPage";
+import EmployeePage from "./pages/employee/EmployeePage";
 import AuthProvider from "./services/auth/AuthProvider";
 import {LoadingOutlined} from "@ant-design/icons";
 import {Spin} from "antd";
@@ -32,6 +33,14 @@ function App() {
                             element={
                                 <AuthProvider role={['SUPERADMIN', 'ADMIN', 'OPERATOR', 'AUDIT']}>
                                     <GoodsPage/>
+                                </AuthProvider>
+                            }
+                        />
+                        <Route
+                            path="karyawan"
+                            element={
+                                <AuthProvider role={['SUPERADMIN', 'ADMIN']}>
+                                    <EmployeePage/>
                                 </AuthProvider>
                             }
                         />

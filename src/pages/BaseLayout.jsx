@@ -17,13 +17,14 @@ function BaseLayout() {
     const dispatch = useDispatch();
 
     useEffect(() => {
+        console.log(user, 'user')
         if (location.pathname === "/") {
             router("/barang", {replace: true});
         }
         if (user == null) {
             dispatch(setUser(JSON.parse(localStorage.getItem(Constant.STORAGE_KEY.USER_INFO))))
         }
-    }, [])
+    }, [user])
 
     return (
         <Layout
