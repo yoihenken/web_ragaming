@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {Layout, Menu, Space} from 'antd';
 import {UserOutlined, ShoppingOutlined} from '@ant-design/icons';
-import {Link, useNavigate} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import { ReactComponent as LogoIcon } from  '../../asset/logo.svg'
 import {useSelector} from "react-redux";
 
@@ -9,34 +9,38 @@ const { Sider } = Layout;
 
 const Navbar = () => {
     const router = useNavigate()
+    const location = useLocation()
     const auth = useSelector((state) => state.user)
     const role = auth == null ? '' : auth.role
     const [menuItems, setMenuItems] = useState([])
+    const [currentMenu, setCurrentMenu] = useState(location.pathname)
 
     const items = [
         {
-            key: '1',
-            icon: <ShoppingOutlined/>,
+            key: '/barang',
+            icon: <ShoppingOutlined />,
             label: 'Barang',
             onClick: () => {
-                console.log('clicked barang')
                 router("barang", {replace: true})
             }
         },
         {
-            key : '2',
+            key : '/karyawan',
             icon : <UserOutlined />,
             label : 'Karyawan',
             onClick : () => {
-                console.log('clicked karyawan')
                 router("karyawan", {replace: true})
             }
-        },
+        }
     ]
 
     useEffect(()=>{
         generateMenuByRole()
     }, [auth])
+
+    useEffect(()=>{
+        setCurrentMenu(location.pathname)
+    }, [location])
 
     const generateMenuByRole = () => {
         switch (role) {
@@ -63,7 +67,7 @@ const Navbar = () => {
     return (
         <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} breakpoint="lg" >
             <LogoIcon style={{paddingTop:'10px'}}/>
-            <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={menuItems} />
+            <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={menuItems} selectedKeys={currentMenu} />
         </Sider>
     )
 }
