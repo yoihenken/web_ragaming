@@ -295,6 +295,7 @@ function EmployeePage() {
                                     <Title level={2}> Data Karyawan </Title>
                                 </Col>
                                 <Col flex={'auto'}>
+                                    {(user.role === 'SUPERADMIN') &&
                                     <Button
                                         type="primary"
                                         shape="round"
@@ -303,7 +304,7 @@ function EmployeePage() {
                                         onClick={showModalAdd}
                                     >
                                         Tambah Karyawan
-                                    </Button>
+                                    </Button>}
                                 </Col>
                                 <Col span={24}>
                                     <Divider/>
